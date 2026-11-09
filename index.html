@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X HUB | Key System & X-POP Store V2</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Prompt) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0b0b0e;
+            --panel-bg: #14121a;
+            --accent-red: #ff2a5f;
+            --text-main: #ffffff;
+            --text-muted: #8a8d9b;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+
+        /* ธีมเอ็มขาว White Mech Cyber */
+        .white-mech-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(20, 18, 26, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .white-mech-card:hover {
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            transition: all 0.3s ease;
+        }
+
+        .glow-white {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-white-glow {
+            background: linear-gradient(90deg, #ffffff 0%, #e2e8f0 100%);
+            color: #0b0b0e;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-white-glow:hover {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+            transform: scale(1.02);
+        }
+
+        /* คีย์การ์ดสไตล์ X HUB */
+        .key-card-widget {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 right-5 bg-white text-gray-950 font-bold px-5 py-3 rounded-xl shadow-2xl z-50 transform translate-y-[-150%] transition duration-300 flex items-center gap-2 border-2 border-pink-500 pointer-events-none">
+        <i class="fa-solid fa-circle-check text-green-600 text-xl" id="toast-icon"></i>
+        <span id="toast-message" class="text-sm">การทำรายการสำเร็จ</span>
+    </div>
+
+    <!-- Header Navbar -->
+    <nav class="bg-[#14121a]/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchPage('store')">
+                    <div class="w-10 h-10 rounded-xl bg-white text-black font-black flex items-center justify-center text-xl shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+                        X
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-wider text-white glow-white">X HUB</span>
+                        <span class="text-xs bg-pink-600 text-white px-2 py-0.5 rounded font-bold ml-1">V2</span>
+                        <p class="text-[10px] text-gray-400 -mt-1">WHITE MECH EDITION</p>
+                    </div>
+                </div>
+
+                <!-- Balance & Menu Button -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-[#0b0b0e] px-4 py-2 rounded-xl border border-gray-800">
+                        <i class="fa-solid fa-coins text-yellow-400"></i>
+                        <span class="text-xs text-gray-400">เครดิต:</span>
+                        <span id="user-balance" class="font-extrabold text-green-400 text-base">0.00</span>
+                        <span class="text-xs text-gray-400">฿</span>
+                    </div>
+
+                    <!-- ปุ่ม 3 ขีด (Hamburger Menu Toggle) -->
+                    <div class="relative">
+                        <button id="menu-btn" onclick="toggleMenu(event)" class="w-11 h-11 bg-gray-900 hover:bg-gray-800 active:bg-gray-700 border border-gray-700 rounded-xl flex items-center justify-center text-white transition text-xl cursor-pointer">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="hidden absolute right-0 mt-3 w-60 bg-[#14121a] border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 py-2">
+                            <div class="px-4 py-2 text-xs text-gray-500 font-bold border-b border-gray-800">เมนูนวัตกรรม</div>
+                            <button onclick="switchPage('store')" class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-store text-blue-400 w-5"></i> หน้าสินค้า X-POP
+                            </button>
+                            <button onclick="switchPage('gacha')" class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-dice text-yellow-400 w-5"></i> สุ่มโปร 99 บาท (เกลือ)
+                            </button>
+                            <button onclick="switchPage('verify')" class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-key text-emerald-400 w-5"></i> ตรวจสอบคีย์ (X HUB)
+                            </button>
+                            <button onclick="switchPage('topup')" class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-wallet text-pink-400 w-5"></i> เติมเงินซองอั่งเปา
+                            </button>
+                            <button onclick="switchPage('history')" class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-clock-history text-purple-400 w-5"></i> ประวัติการซื้อ & คีย์
+                            </button>
+                            <div class="border-t border-gray-800 my-1"></div>
+                            <button onclick="openAdminModal()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-950/40 flex items-center gap-3 transition cursor-pointer">
+                                <i class="fa-solid fa-user-shield text-red-500 w-5"></i> เข้าสู่แอดมิน (Code: ss)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- PAGE 1: หน้าสินค้า X-POP (STORE) -->
+        <div id="page-store" class="space-y-8">
+            <!-- Banner หน้าปกเอ็มขาว -->
+            <div class="relative bg-gradient-to-r from-gray-900 via-slate-900 to-black border-2 border-white/40 rounded-3xl p-8 md:p-12 overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.15)]">
+                <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-white text-black text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md">
+                        ⚔️ WHITE MECH EDITION V2
+                    </span>
+                    <h1 class="text-4xl md:text-6xl font-black text-white mt-4 mb-2 tracking-wide glow-white">
+                        X-POP <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">WHITE MECH</span>
+                    </h1>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        สินค้าเอ็มขาว คีย์พรีเมียมระดับสูง ปลอดภัย ไม่โดนแบน อัปเดตคีย์รูปแบบใหม่ระบบอัตโนมัติ pldk-xxxxx-xxx-x
+                    </p>
+                </div>
+            </div>
+
+            <!-- Product Category Title -->
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                    <span class="w-3 h-8 bg-white rounded-full inline-block"></span>
+                    แพ็กเกจ X-POP (เอ็มขาว)
+                </h2>
+                <span class="text-xs text-gray-400">เลือกเวลารับคีย์ทันที</span>
+            </div>
+
+            <!-- Product Cards Grid (5 Options) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 1. 1 ชั่วโมง -->
+                <div class="white-mech-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-3 right-3 bg-gray-800 text-xs px-2.5 py-1 rounded-full text-gray-300 font-bold">1 ชม.</div>
+                    <div>
+                        <div class="text-xs text-pink-500 font-bold uppercase tracking-wider mb-1">X-POP PACK</div>
+                        <h3 class="text-2xl font-black text-white">X-POP 1 ชั่วโมง</h3>
+                        <p class="text-gray-400 text-xs mt-2">คีย์ใช้งานชั่วคราว 1 ชั่วโมง ทดสอบความโหด</p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-800/80 pt-4">
+                        <div>
+                            <span class="text-xs text-gray-500 block">ราคา</span>
+                            <span class="text-2xl font-black text-white">10.00 <span class="text-sm font-normal text-gray-400">฿</span></span>
+                        </div>
+                        <button onclick="buyProduct('X-POP 1 ชั่วโมง', 10, '1 ชม.', 50)" class="btn-white-glow font-extrabold px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+                            ซื้อสินค้า
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. 6 ชั่วโมง -->
+                <div class="white-mech-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-3 right-3 bg-gray-800 text-xs px-2.5 py-1 rounded-full text-gray-300 font-bold">6 ชม.</div>
+                    <div>
+                        <div class="text-xs text-pink-500 font-bold uppercase tracking-wider mb-1">X-POP PACK</div>
+                        <h3 class="text-2xl font-black text-white">X-POP 6 ชั่วโมง</h3>
+                        <p class="text-gray-400 text-xs mt-2">คีย์ใช้งาน 6 ชั่วโมง ฟาร์มยาวๆ สุดคุ้ม</p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-800/80 pt-4">
+                        <div>
+                            <span class="text-xs text-gray-500 block">ราคา</span>
+                            <span class="text-2xl font-black text-white">20.00 <span class="text-sm font-normal text-gray-400">฿</span></span>
+                        </div>
+                        <button onclick="buyProduct('X-POP 6 ชั่วโมง', 20, '6 ชม.', 500)" class="btn-white-glow font-extrabold px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+                            ซื้อสินค้า
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. 1 วัน -->
+                <div class="white-mech-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-3 right-3 bg-blue-600 text-xs px-2.5 py-1 rounded-full text-white font-bold">POPULAR</div>
+                    <div>
+                        <div class="text-xs text-pink-500 font-bold uppercase tracking-wider mb-1">X-POP PACK</div>
+                        <h3 class="text-2xl font-black text-white">X-POP 1 วัน</h3>
+                        <p class="text-gray-400 text-xs mt-2">คีย์ใช้งาน 24 ชั่วโมง เล่นได้ต่อเนื่องเต็มวัน</p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-800/80 pt-4">
+                        <div>
+                            <span class="text-xs text-gray-500 block">ราคา</span>
+                            <span class="text-2xl font-black text-white">108.00 <span class="text-sm font-normal text-gray-400">฿</span></span>
+                        </div>
+                        <button onclick="buyProduct('X-POP 1 วัน', 108, '1 วัน', 5000)" class="btn-white-glow font-extrabold px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+                            ซื้อสินค้า
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. 7 วัน -->
+                <div class="white-mech-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-3 right-3 bg-purple-600 text-xs px-2.5 py-1 rounded-full text-white font-bold">7 DAYS</div>
+                    <div>
+                        <div class="text-xs text-pink-500 font-bold uppercase tracking-wider mb-1">X-POP PACK</div>
+                        <h3 class="text-2xl font-black text-white">X-POP 7 วัน</h3>
+                        <p class="text-gray-400 text-xs mt-2">คีย์รายสัปดาห์ 7 วัน ฟาร์มโหดทั้งสัปดาห์</p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-800/80 pt-4">
+                        <div>
+                            <span class="text-xs text-gray-500 block">ราคา</span>
+                            <span class="text-2xl font-black text-white">156.00 <span class="text-sm font-normal text-gray-400">฿</span></span>
+                        </div>
+                        <button onclick="buyProduct('X-POP 7 วัน', 156, '7 วัน', 25000)" class="btn-white-glow font-extrabold px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+                            ซื้อสินค้า
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. 1 เดือน -->
+                <div class="white-mech-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden border-yellow-500/50">
+                    <div class="absolute top-3 right-3 bg-yellow-500 text-black text-xs px-2.5 py-1 rounded-full font-black">BEST VALUE</div>
+                    <div>
+                        <div class="text-xs text-yellow-400 font-bold uppercase tracking-wider mb-1">X-POP VIP</div>
+                        <h3 class="text-2xl font-black text-white">X-POP 1 เดือน</h3>
+                        <p class="text-gray-400 text-xs mt-2">คีย์รายเดือน 30 วัน ปลดล็อกทุกอย่างแบบถาวร</p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between border-t border-gray-800/80 pt-4">
+                        <div>
+                            <span class="text-xs text-gray-500 block">ราคา</span>
+                            <span class="text-2xl font-black text-white">240.00 <span class="text-sm font-normal text-gray-400">฿</span></span>
+                        </div>
+                        <button onclick="buyProduct('X-POP 1 เดือน', 240, '1 เดือน', 80000)" class="btn-white-glow font-extrabold px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+                            ซื้อสินค้า
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: สุ่มโปร 99 บาท (GACHA - มีเกลือออกบ่อย) -->
+        <div id="page-gacha" class="hidden space-y-8 max-w-3xl mx-auto">
+            <div class="bg-[#14121a] border border-yellow-500/30 rounded-3xl p-8 text-center space-y-4 shadow-2xl relative overflow-hidden">
+                <div class="inline-block bg-yellow-500/20 text-yellow-400 text-xs font-bold px-4 py-1.5 rounded-full border border-yellow-500/40">
+                    🎲 GACHA SYSTEM (RATE เกลือ 70%)
+                </div>
+                <h2 class="text-3xl font-black text-white">ตู้สุ่มโปร X-POP 99 บาท</h2>
+                <p class="text-xs text-gray-400 max-w-md mx-auto">
+                    ลุ้นรับคีย์ X-POP ตั้งแต่ 1 ชั่วโมง จนถึง VIP 1 เดือน หรือ VIP ตลอดชีพ! <br>
+                    <span class="text-red-400 font-bold">*คำเตือน: เกลือออกบ่อยมาก เสี่ยงโชคตามความสมัครใจ*</span>
+                </p>
+
+                <!-- Box Graphic -->
+                <div class="py-8">
+                    <div id="gacha-box" class="w-40 h-40 mx-auto bg-gradient-to-tr from-yellow-600 via-yellow-400 to-amber-200 rounded-3xl flex items-center justify-center text-black text-6xl shadow-[0_0_40px_rgba(234,179,8,0.5)] cursor-pointer transition transform hover:scale-105" onclick="spinGacha()">
+                        <i class="fa-solid fa-box-open animate-bounce"></i>
+                    </div>
+                </div>
+
+                <div class="text-sm font-bold text-gray-300">ค่าสุ่มครั้งละ <span class="text-yellow-400 text-xl font-black">99.00</span> บาท</div>
+                
+                <button onclick="spinGacha()" class="w-full bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-black py-4 rounded-xl shadow-lg transition text-base uppercase cursor-pointer">
+                    <i class="fa-solid fa-dice mr-2"></i> สุ่มเลย 99 บาท!
+                </button>
+            </div>
+        </div>
+
+        <!-- PAGE 3: ระบบตรวจสอบคีย์ (VERIFY KEY - X HUB) -->
+        <div id="page-verify" class="hidden space-y-8 max-w-lg mx-auto">
+            <div class="key-card-widget">
+                <div class="key-title text-lg font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-emerald-400"></i> ระบบยืนยันคีย์ (X HUB Key System)
+                </div>
+                <div class="key-desc text-xs text-gray-400 mb-4 leading-relaxed">
+                    รูปแบบคีย์: <code class="text-white bg-gray-800 px-1.5 py-0.5 rounded">pldk-xxxxx-xxx-x</code><br>
+                    • 1 - 100 = 1 ชั่วโมง<br>
+                    • 101 - 1,000 = 6 ชั่วโมง<br>
+                    • 1,001 - 10,000 = 1 วัน<br>
+                    • 10,001 - 50,000 = 7 วัน<br>
+                    • 50,001 - 100,000 = 1 เดือน
+                </div>
+                
+                <div class="flex gap-2">
+                    <input type="text" id="user-key-input" class="flex-1 bg-[#0e0c14] border border-gray-700 rounded-xl px-4 py-3 text-white font-mono text-sm outline-none focus:border-emerald-500" placeholder="pldk-21123-268m-50" value="pldk-21123-268m-50">
+                    <button class="bg-white text-black font-extrabold px-5 rounded-xl text-sm hover:bg-gray-200 transition cursor-pointer" onclick="verifyKeyFromInput()">ตรวจสอบ</button>
+                </div>
+                <div id="key-result-output" class="text-xs mt-3 font-bold min-h-[24px]"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: หน้าเติมเงินซองอั่งเปา (TOPUP) -->
+        <div id="page-topup" class="hidden space-y-8 max-w-xl mx-auto">
+            <div class="bg-[#14121a] border border-pink-500/30 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+ 
